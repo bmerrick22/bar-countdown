@@ -3,49 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How much time does Eric have?</title>
+  <title>Eric Debt Calculator</title>
   <style>
-    body {
-      background: #000;
-      color: #0f0;
-      font-family: monospace;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: #fff;
+      color: #000;
+      font-family: monospace, system-ui, sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
-      font-size: 2rem;
+      align-items: center;
+      text-align: center;
     }
-    h1 { margin-bottom: 1rem; }
+
+    h1 {
+      margin: 0.2em 0;
+      font-size: clamp(1.5rem, 6vw, 3rem);
+    }
+
+    h2 {
+      margin: 0.2em 0;
+      font-size: clamp(0.8rem, 3vw, 1.2rem);
+      color: #333;
+      padding: 0 10px;
+    }
+
+    #display {
+      margin-top: 1em;
+      font-size: clamp(1.5rem, 8vw, 2.5rem);
+      font-weight: bold;
+      word-wrap: break-word;
+    }
+
+    body, #display, h1, h2 {
+      max-width: 95vw;
+    }
   </style>
 </head>
 <body>
-  <h1>How much time does Eric have?</h1>
-  <div id="display">calculating…</div>
+  <h1>Eric Debt Calculator</h1>
+  <h2>On 9/7 he had 12 hours and 35 minutes left. This clock shows his debt, increasing at 1 hour per day since then.</h2>
+  <div id="display">🍺 calculating… 🍺</div>
 
   <script>
-    const baseDate = new Date('2025-09-07T00:00:00'); // base moment in local timezone
-    const baseMs = (12 * 60 * 60 + 35 * 60) * 1000;   // 12h 35m in ms
-    const msPerHour = 60*60*1000;
+    // Base date in local time (month is 0-indexed)
+    const baseDate = new Date(2025, 8, 7, 0, 0, 0); // 9/7/2025 00:00 local
+    const baseMs = (12 * 60 * 60 + 35 * 60) * 1000; // 12h 35m in ms
+    const msPerHour = 60 * 60 * 1000;
+    const msPerDay = 24 * msPerHour;
 
     const el = document.getElementById('display');
 
     function update() {
       const now = new Date();
-      const diffMs = now - baseDate; // ms since baseDate
-      const daysSinceBase = diffMs / (1000*60*60*24); // fractional days
-      const addedMs = daysSinceBase * msPerHour; // 1 hour per day, spread across current day
+      let diffMs = now - baseDate;
+
+      // Ensure we only count full days AFTER 9/7
+      let fullDays = Math.floor(diffMs / msPerDay) - 1; 
+      if (fullDays < 0) fullDays = 0;
+
+      // Fraction of current day: how far into today (relative to last full day)
+      const fractionalMs = diffMs - (fullDays + 1) * msPerDay;
+      const partialDayFraction = fractionalMs > 0 ? fractionalMs / msPerDay : 0;
+
+      // Total added ms = 1 hour per full day + fractional hour for current day
+      const addedMs = (fullDays + partialDayFraction) * msPerHour;
+
       const totalMs = baseMs + addedMs;
 
-      // break totalMs into hours, minutes, seconds, ms
+      // Convert totalMs to h:m:s:ms
       let rem = totalMs;
-      const hours = Math.floor(rem / msPerHour); rem -= hours*msPerHour;
-      const minutes = Math.floor(rem / (60*1000)); rem -= minutes*60*1000;
-      const seconds = Math.floor(rem / 1000); rem -= seconds*1000;
+      const hours = Math.floor(rem / msPerHour); rem -= hours * msPerHour;
+      const minutes = Math.floor(rem / (60*1000)); rem -= minutes * 60*1000;
+      const seconds = Math.floor(rem / 1000); rem -= seconds * 1000;
       const milliseconds = Math.floor(rem);
 
-      el.textContent = `${hours}h ${String(minutes).padStart(2,'0')}m ${String(seconds).padStart(2,'0')}s ${String(milliseconds).padStart(3,'0')}ms`;
+      el.textContent = `🍺 ${hours}h ${String(minutes).padStart(2,'0')}m ${String(seconds).padStart(2,'0')}s ${String(milliseconds).padStart(3,'0')}ms 🍺`;
 
       requestAnimationFrame(update);
     }
