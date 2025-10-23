@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How much time does Eric have?</title>
+  <style>
+    body {
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-size: 2rem;
+    }
+    h1 { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>How much time does Eric have?</h1>
+  <div id="display">calculating…</div>
+
+  <script>
+    const baseDate = new Date('2025-09-07T00:00:00'); // base moment in local timezone
+    const baseMs = (12 * 60 * 60 + 35 * 60) * 1000;   // 12h 35m in ms
+    const msPerHour = 60*60*1000;
+
+    const el = document.getElementById('display');
+
+    function update() {
+      const now = new Date();
+      const diffMs = now - baseDate; // ms since baseDate
+      const daysSinceBase = diffMs / (1000*60*60*24); // fractional days
+      const addedMs = daysSinceBase * msPerHour; // 1 hour per day, spread across current day
+      const totalMs = baseMs + addedMs;
+
+      // break totalMs into hours, minutes, seconds, ms
+      let rem = totalMs;
+      const hours = Math.floor(rem / msPerHour); rem -= hours*msPerHour;
+      const minutes = Math.floor(rem / (60*1000)); rem -= minutes*60*1000;
+      const seconds = Math.floor(rem / 1000); rem -= seconds*1000;
+      const milliseconds = Math.floor(rem);
+
+      el.textContent = `${hours}h ${String(minutes).padStart(2,'0')}m ${String(seconds).padStart(2,'0')}s ${String(milliseconds).padStart(3,'0')}ms`;
+
+      requestAnimationFrame(update);
+    }
+
+    update();
+  </script>
+</body>
+</html>
